@@ -108,8 +108,8 @@ void secondChance(int n, vector<int>& seq, int framesCount, vector<int>& refBits
 // NRU Page Replacement
 void nru(int n, vector<int>& seq, int framesCount, vector<int>& refBits, vector<int>& modBits) {
     vector<int> frames(framesCount, -1);
-    vector<int> reference = refBits;
-    vector<int> modify = modBits;
+    vector<int> reference(framesCount, 0);
+    vector<int> modify(framesCount, 0);
     int faults = 0;
     cout << "NRU Algorithm:\n";
     for (int i = 0; i < n; ++i) {
@@ -117,12 +117,18 @@ void nru(int n, vector<int>& seq, int framesCount, vector<int>& refBits, vector<
         auto it = find(frames.begin(), frames.end(), page);
         if (it != frames.end()) {
             int idx = it - frames.begin();
-            reference[idx] = 1;
+            reference[idx] = 1; // Set reference bit on hit
             printFrames(frames);
             continue;
         }
         faults++;
         int classIdx = -1;
+        // On first page fault, initialize reference and modify bits from input
+        if (i == 0) {
+            reference = refBits;
+            modify = modBits;
+        }
+        // Find victim according to NRU classes
         for (int c = 0; c < 4; ++c) {
             for (int j = 0; j < framesCount; ++j) {
                 if (frames[j] == -1) {
@@ -137,8 +143,8 @@ void nru(int n, vector<int>& seq, int framesCount, vector<int>& refBits, vector<
             if (classIdx != -1) break;
         }
         frames[classIdx] = page;
-        reference[classIdx] = 0;
-        modify[classIdx] = 0;
+        reference[classIdx] = 1; // Set reference bit on insertion
+        modify[classIdx] = 0;    // Reset modify bit on insertion
         printFrames(frames);
     }
     cout << "Page Faults: " << faults << "\n\n";
