@@ -1,7 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-// Utility function to print frames
 void printFrames(const vector<int>& frames) {
     for (int f : frames) {
         if (f == -1) cout << "_ ";
@@ -10,15 +9,31 @@ void printFrames(const vector<int>& frames) {
     cout << endl;
 }
 
+// Utility function to print frames in tabular form
+void printFramesTable(const vector<int>& frames) {
+    cout << "|";
+    for (int f : frames) {
+        if (f == -1) cout << "   _   |";
+        else cout << "  " << setw(3) << f << "  |";
+    }
+    cout << endl;
+    cout << "+";
+    for (size_t i = 0; i < frames.size(); ++i) cout << "-------+";
+    cout << endl;
+}
+
 // Optimal Page Replacement
 void optimal(int n, vector<int>& seq, int framesCount) {
     vector<int> frames(framesCount, -1);
     int faults = 0;
-    cout << "Optimal Algorithm:\n";
+    cout << "\nOptimal Algorithm:\n";
+    cout << "+";
+    for (int i = 0; i < framesCount; ++i) cout << "-------+";
+    cout << endl;
     for (int i = 0; i < n; ++i) {
         int page = seq[i];
         if (find(frames.begin(), frames.end(), page) != frames.end()) {
-            printFrames(frames);
+            printFramesTable(frames);
             continue;
         }
         faults++;
@@ -41,7 +56,7 @@ void optimal(int n, vector<int>& seq, int framesCount) {
             idx = pos;
         }
         frames[idx] = page;
-        printFrames(frames);
+        printFramesTable(frames);
     }
     cout << "Page Faults: " << faults << "\n\n";
 }
@@ -51,11 +66,14 @@ void fifo(int n, vector<int>& seq, int framesCount) {
     vector<int> frames(framesCount, -1);
     queue<int> q;
     int faults = 0;
-    cout << "FIFO Algorithm:\n";
+    cout << "\nFIFO Algorithm:\n";
+    cout << "+";
+    for (int i = 0; i < framesCount; ++i) cout << "-------+";
+    cout << endl;
     for (int i = 0; i < n; ++i) {
         int page = seq[i];
         if (find(frames.begin(), frames.end(), page) != frames.end()) {
-            printFrames(frames);
+            printFramesTable(frames);
             continue;
         }
         faults++;
@@ -72,7 +90,7 @@ void fifo(int n, vector<int>& seq, int framesCount) {
             frames[idx] = page;
             q.push(idx);
         }
-        printFrames(frames);
+        printFramesTable(frames);
     }
     cout << "Page Faults: " << faults << "\n\n";
 }
@@ -82,14 +100,17 @@ void secondChance(int n, vector<int>& seq, int framesCount, vector<int>& refBits
     vector<int> frames(framesCount, -1);
     vector<int> reference(framesCount, 0);
     int pointer = 0, faults = 0;
-    cout << "Second Chance Algorithm:\n";
+    cout << "\nSecond Chance Algorithm:\n";
+    cout << "+";
+    for (int i = 0; i < framesCount; ++i) cout << "-------+";
+    cout << endl;
     for (int i = 0; i < n; ++i) {
         int page = seq[i];
         auto it = find(frames.begin(), frames.end(), page);
         if (it != frames.end()) {
             int idx = it - frames.begin();
             reference[idx] = 1;
-            printFrames(frames);
+            printFramesTable(frames);
             continue;
         }
         faults++;
@@ -100,7 +121,7 @@ void secondChance(int n, vector<int>& seq, int framesCount, vector<int>& refBits
         frames[pointer] = page;
         reference[pointer] = 0;
         pointer = (pointer + 1) % framesCount;
-        printFrames(frames);
+        printFramesTable(frames);
     }
     cout << "Page Faults: " << faults << "\n\n";
 }
@@ -111,14 +132,17 @@ void nru(int n, vector<int>& seq, int framesCount, vector<int>& refBits, vector<
     vector<int> reference(framesCount, 0);
     vector<int> modify(framesCount, 0);
     int faults = 0;
-    cout << "NRU Algorithm:\n";
+    cout << "\nNRU Algorithm:\n";
+    cout << "+";
+    for (int i = 0; i < framesCount; ++i) cout << "-------+";
+    cout << endl;
     for (int i = 0; i < n; ++i) {
         int page = seq[i];
         auto it = find(frames.begin(), frames.end(), page);
         if (it != frames.end()) {
             int idx = it - frames.begin();
             reference[idx] = 1; // Set reference bit on hit
-            printFrames(frames);
+            printFramesTable(frames);
             continue;
         }
         faults++;
@@ -145,7 +169,7 @@ void nru(int n, vector<int>& seq, int framesCount, vector<int>& refBits, vector<
         frames[classIdx] = page;
         reference[classIdx] = 1; // Set reference bit on insertion
         modify[classIdx] = 0;    // Reset modify bit on insertion
-        printFrames(frames);
+        printFramesTable(frames);
     }
     cout << "Page Faults: " << faults << "\n\n";
 }
