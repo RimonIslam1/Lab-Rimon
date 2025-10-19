@@ -1,107 +1,108 @@
-#include <bits/stdc++.h>
-using namespace std;
 
 /*
- Single-instance deadlock detection (algorithm from prompt).
- Input format:
-   n m
-   m lines: u v   (directed arc u -> v)
- Nodes are 0-based (0 .. n-1). If your input is 1-based, subtract 1 when entering.
- The program tries each node as a start node; for each start it
- - marks all arcs unmarked
- - follows unmarked outgoing arcs, marking them as taken
- - records the path L and detects when a node repeats in L => cycle
- On finding a cycle the cycle is printed and the program exits.
+13 13
+R A
+A S
+C S
+F S
+W F
+D S
+U D
+G U
+D T
+B T
+T E
+E V
+V G
 */
 
-bool detectFrom(int start,
-                const vector<vector<pair<int,int>>> &adj,
-                int n, int m,
-                vector<int> &outCycle) 
+#include <bits/stdc++.h>
+
+using namespace std;
+
+struct edge {
+    char node;
+    bool marked;
+
+    edge() : node(0), marked(false) {}
+
+    edge(char node) : node(node), marked(false) {}
+};
+
+void dfs(char u, map <char, vector <edge> > &adj_list, vector <char> &path, int &f)
 {
-    // edge marks initially all false for this start
-    vector<char> edgeMarked(m, 0);
-    vector<int> L;          // path list
-    int current = start;
+    if (!f) {
+        return;
+    }
 
-    while (true) {
-        // Step 3: add current to L and check if it appears twice
-        L.push_back(current);
+    for (auto &v : adj_list[u]) {
+        if (!v.marked) {
+            v.marked = true;
 
-        // check for earlier occurrence of current in L (except last)
-        int firstIdx = -1;
-        for (int i = 0; i + 1 < (int)L.size(); ++i) {
-            if (L[i] == current) { firstIdx = i; break; }
-        }
-        if (firstIdx != -1) {
-            // cycle found: nodes from firstIdx..end of L
-            outCycle.assign(L.begin() + firstIdx, L.end());
-            return true;
-        }
+            if (find(path.begin(), path.end(), v.node) == path.end()) {
+                path.push_back(v.node);
 
-        // Step 4: find any unmarked outgoing arc from current
-        int chosenEdge = -1;
-        int chosenTo = -1;
-        for (auto &p : adj[current]) {
-            int to = p.first;
-            int eid = p.second;
-            if (!edgeMarked[eid]) { chosenEdge = eid; chosenTo = to; break; }
-        }
+                dfs(v.node, adj_list, path, f);
 
-        // Step 5: if found, mark it and follow
-        if (chosenEdge != -1) {
-            edgeMarked[chosenEdge] = 1;
-            current = chosenTo;
-            continue;
-        }
+                if (!f) {
+                    return;
+                }
 
-        // Step 6: dead end
-        if (current == start) {
-            // reached start and no unmarked outgoing arcs => no cycle for this start
-            return false;
-        } else {
-            // remove current and go back to previous
-            L.pop_back();
-            if (L.empty()) return false; // defensive
-            current = L.back();
-            continue;
+                path.pop_back();
+            }
+            else {
+                f = 0;
+
+                return;
+            }
         }
     }
 }
 
-int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
+int32_t main()
+{
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
 
-    int n, m;
-    if (!(cin >> n >> m)) return 0;
-    vector<pair<int,int>> edges;
-    vector<vector<pair<int,int>>> adj(n);
-    edges.reserve(m);
+    int n, m, i, f = 1;
+    char u, v;
+    map <char, vector <edge> > adj_list;
+    map <char, bool> visited;
+    vector <char> path;
 
-    for (int i = 0; i < m; ++i) {
-        int u, v;
+    // num_nodes, num_edges
+    cin >> n >> m;
+
+    for (i = 0; i < m; i++) {
+        // u -> v
         cin >> u >> v;
-        // assume input 0-based; if using 1-based, subtract 1 here:
-        // u--; v--;
-        edges.emplace_back(u, v);
-        adj[u].push_back({v, i}); // store edge id i
+
+        adj_list[u].push_back(v);
+
+        visited[u] = visited[v] = false;
     }
 
-    // Try each node as start
-    for (int s = 0; s < n; ++s) {
-        vector<int> cycle;
-        if (detectFrom(s, adj, n, m, cycle)) {
-            cout << "Cycle found starting from node " << s << " :\n";
-            for (size_t i = 0; i < cycle.size(); ++i) {
-                if (i) cout << " -> ";
-                cout << cycle[i];
+    for (auto &it : adj_list) {
+        path.clear();
+
+        dfs(it.first, adj_list, path, f);
+
+        if (!f) {
+            cout << "Deadlock detected.\nCycle path:\n";
+
+            for (auto &it : path) {
+                cout << it << " ";
             }
+
             cout << "\n";
-            return 0;
+
+            break;
         }
     }
 
-    cout << "No cycles detected in the graph (no deadlock).\n";
+    if (f) {
+        cout << "No Deadlock detected\n";
+    }
+
     return 0;
 }

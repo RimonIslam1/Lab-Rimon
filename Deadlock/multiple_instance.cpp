@@ -1,98 +1,135 @@
+/*
+4 3
+
+4 2 3 1
+2 1 0 0
+
+0 0 1 0
+2 0 0 1
+0 1 2 0
+
+2 0 0 1
+1 0 1 0
+2 1 0 0
+*/
+
 #include <bits/stdc++.h>
+
 using namespace std;
 
-int main() {
-    //ios::sync_with_stdio(false);
-    //cin.tie(nullptr);
+int row_less(vector <int> &u, vector <int> &v)
+{
+    int i;
 
-    int P, R; // P = number of processes (v), R = number of resource types
-    if (!(cin >> P >> R)) {
-        cerr << "Failed to read number of processes and resources.\n";
-        return 1;
+    for (i = 0; i < u.size(); i++) {
+        if (u[i] > v[i]) {
+            return false;
+        }
     }
 
-    vector<long long> available(R);
-    for (int j = 0; j < R; ++j) {
-        cin >> available[j];
+    return true;
+}
+
+int32_t main()
+{
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int processes, resources;
+    int i, j, change;
+
+    // num_res, num_proc
+    cin >> resources >> processes;
+
+    vector <int> E(resources, 0), A(resources, 0);
+    vector <vector <int> > C(processes, vector <int> (resources, 0)), R(processes, vector <int> (resources, 0));
+    vector <bool> marked(processes, false);
+
+    // existing
+    for (i = 0; i < resources; i++) {
+        cin >> E[i];
     }
 
-    vector<vector<long long>> allocation(P, vector<long long>(R));
-    for (int i = 0; i < P; ++i)
-        for (int j = 0; j < R; ++j)
-            cin >> allocation[i][j];
+    // available
+    for (i = 0; i < resources; i++) {
+        cin >> A[i];
+    }
 
-    vector<vector<long long>> request(P, vector<long long>(R));
-    for (int i = 0; i < P; ++i)
-        for (int j = 0; j < R; ++j)
-            cin >> request[i][j];
+    // current allocation
+    for (i = 0; i < processes; i++) {
+        for (j = 0; j < resources; j++) {
+            cin >> C[i][j];
+        }
+    }
 
-    // Set verbose = true to see iteration trace
-    bool verbose = false;
+    // request
+    for (i = 0; i < processes; i++) {
+        for (j = 0; j < resources; j++) {
+            cin >> R[i][j];
+        }
+    }
 
-    vector<bool> marked(P, false);
-    bool changed = true;
+    while (count(marked.begin(), marked.end(), false)) {
+        change = 0;
 
-    if (verbose) {
-        cout << "Initial Available: ";
-        for (auto x : available) cout << x << ' ';
+        for (i = 0; i < processes; i++) {
+            if (!marked[i]) {
+                if (row_less(R[i], A)) {
+                    for (j = 0; j < resources; j++) {
+                        A[j] += C[i][j];
+
+                        C[i][j] = R[i][j] = 0;
+                    }
+
+                    marked[i] = true;
+
+                    change = 1;
+                }
+            }
+        }
+
+        if (!change) {
+            break;
+        }
+    }
+
+    if (count(marked.begin(), marked.end(), false)) {
+        cout << "Deadlock detected\n\n";
+
+        cout << "A:\n";
+
+        for (i = 0; i < resources; i++) {
+            cout << A[i] << " ";
+        }
+
+        cout << "\n\n";
+
+        cout << "C:\n";
+
+        for (i = 0; i < processes; i++) {
+            for (j = 0; j < resources; j++) {
+                cout << C[i][j] << " ";
+            }
+
+            cout << "\n";
+        }
+
+        cout << "\n";
+
+        cout << "R:\n";
+
+        for (i = 0; i < processes; i++) {
+            for (j = 0; j < resources; j++) {
+                cout << R[i][j] << " ";
+            }
+
+            cout << "\n";
+        }
+
         cout << "\n";
     }
-
-    while (changed) {
-        changed = false;
-        for (int i = 0; i < P; ++i) {
-            if (marked[i]) continue;
-
-            bool can_finish = true;
-            for (int j = 0; j < R; ++j) {
-                if (request[i][j] > available[j]) {
-                    can_finish = false;
-                    break;
-                }
-            }
-
-            if (can_finish) {
-                // simulate process i finishing and releasing its allocated resources
-                if (verbose) {
-                    cout << "Process P" << i << " can finish. Releasing: ";
-                    for (int j = 0; j < R; ++j) cout << allocation[i][j] << (j+1==R?'\n':' ');
-                }
-                for (int j = 0; j < R; ++j)
-                    available[j] += allocation[i][j];
-                marked[i] = true;
-                changed = true;
-
-                if (verbose) {
-                    cout << "Available now: ";
-                    for (auto x : available) cout << x << ' ';
-                    cout << "\n";
-                }
-                // after marking, go back to searching from first process (optional)
-            }
-        }
-    }
-
-    // collect unmarked -> deadlocked
-    vector<int> deadlocked;
-    for (int i = 0; i < P; ++i)
-        if (!marked[i]) deadlocked.push_back(i);
-
-    if (deadlocked.empty()) {
-        cout << "No deadlock; all processes can finish.\n";
-    } else {
-        cout << "Deadlocked processes (0-based indices): ";
-        for (size_t k = 0; k < deadlocked.size(); ++k) {
-            if (k) cout << ", ";
-            cout << deadlocked[k];
-        }
-        cout << '\n';
-
-        cout << "Deadlocked processes (1-based indices): ";
-        for (size_t k = 0; k < deadlocked.size(); ++k) {
-            if (k) cout << ", ";
-            cout << (deadlocked[k] + 1);
-        }
-        cout << '\n';
+    else {
+        cout << "No Deadlock detected\n";
     }
 
     return 0;
