@@ -16,10 +16,12 @@ vector<int> read_int_line(const string &prompt = "") {
     while (iss >> x) vals.push_back(x);
     return vals;
 }
+//12
+//2 3 2 1 5 2 4 5 3 2 5 2
 
 int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
+    //ios::sync_with_stdio(false);
+    //cin.tie(nullptr);
 
     cout << "Number of pages:\n";
     int num_pages;

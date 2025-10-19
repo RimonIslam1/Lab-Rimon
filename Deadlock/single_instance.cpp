@@ -61,8 +61,8 @@ void dfs(char u, map <char, vector <edge> > &adj_list, vector <char> &path, int 
 
 int32_t main()
 {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
+    //ios_base::sync_with_stdio(false);
+    //cin.tie(NULL);
 
     int n, m, i, f = 1;
     char u, v;
